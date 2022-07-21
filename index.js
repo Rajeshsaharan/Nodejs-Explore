@@ -60,3 +60,12 @@ console.log(dirPath)
 for (let i=0 ; i < 5; i++){
     fileSystem.writeFileSync(`${dirPath}/myfile${i}.txt`, 'files from loops')
 }
+
+//how to read all files from a directory
+
+// fileSystem.readdir(diretcory path, callback)
+
+fileSystem.read(dirPath, (errror, files)=>{
+    console.log(files) //list of all files inside an directory
+    
+})
