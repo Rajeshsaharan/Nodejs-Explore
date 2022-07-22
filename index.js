@@ -1,14 +1,19 @@
+const deleteData = require('./deletedata')
 const getData = require('./getdata')
 const insertData = require ("./insertdata")
 const updateData = require('./updatedata')
 //get data from database
 
-getData()
+// getData()
 
 //to insert data to database
 
-insertData()
+// insertData()
 
 //to update data for an instance
 
-updateData()
+// updateData()
+
+//to delete data from database
+
+deleteData()
