@@ -1,15 +1,14 @@
-const dbConnect = require('./mongodb')
+const getData = require('./getdata')
+const insertData = require ("./insertdata")
+const updateData = require('./updatedata')
+//get data from database
 
+getData()
 
-// console.log(dbConnect('users', 'myuser')) //as we know function or variable return Promise cant console direct we can apply .then or async or await fuction on it
- 
+//to insert data to database
 
-async function getdata(){
-    let data = await dbConnect("users", "myuser")
-    console.log(data)
-}
-    
+insertData()
 
-getdata()
+//to update data for an instance
 
-// jab bhi koi variable or function Promise return kare to usee .then() ya async await function se handle kare !!!important
+updateData()
