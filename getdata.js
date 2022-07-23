@@ -10,7 +10,9 @@ const dbConnect = require('./mongodb')
 async function getData(){
     const database = await dbConnect("users", "myuser") // give db.collection(collectionName) as Promise
     const getdata = await database.find({}).toArray() // data is now promise 
-    console.log(getdata)
+    // console.log(getdata)
+    //return getdata can be used to app.get() method
+    return getdata; //if we return anything from async or await function it will return it as Promise
 }
     
 //we cannt use await direct so we  shouldn use async function with it always
