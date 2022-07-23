@@ -4,6 +4,8 @@ const insertData = require ("./insertdata")
 const updateData = require('./updatedata')
 
 const express = require('express')
+const { request } = require('express')
+const { response } = require('express')
 const app = express()
 
 
@@ -44,4 +46,14 @@ app.put('/', async(request, response)=>{
     response.send("data is updated")
 })
 
+
+// delete method from browser
+
+app.delete('/:id', async(request, response)=>{
+    //id can be access by query parama -- watch notes one time
+    const id = request.params.id
+    console.log(id)
+    const deletedata = await deleteData(id)
+    response.send(deletedata)
+})
 
