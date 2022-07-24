@@ -1,14 +1,17 @@
 const bcrypt = require('bcrypt')
+require("dotenv").config();
 const express = require('express')
 const mongodb = require('mongodb')
 const mongoose = require('mongoose')
 mongoose.pluralize(null)  
+const jwt = require('jsonwebtoken')
 // const res = require('express/lib/response')
 const User = require('./users') //gives Model of any database
 const Post = require('./posts')
 const { request } = require('express')
 const { response } = require('express')
 const app = express()
+const  verifyToken = require('./middlewareAuth')
 
 
 app.use(express.json()) //to conert data to json format 
@@ -26,12 +29,15 @@ app.get('/', async(request, response)=>{
 
 //create data
 
-app.post("/create", async(request, response)=>{
+app.post("/create", verifyToken, async(request, response)=>{
     const database = await mongoose.connect(`mongodb://localhost:27017/myDatabase`)
-    console.log(request.body )
-    const insertdata = await Post(request.body).save()
-    response.send(insertdata)
-    console.log(insertdata)
+    try{
+        const insertdata = await Post(request.body).save()
+        response.send({insertdata, user: request.user})
+        console.log(insertdata)
+    }catch(error){
+        response.send({error})
+    }
 })
 
 
@@ -47,19 +53,20 @@ app.put('/update/:id', async(request, response)=>{
 app.delete('/delete/:id', async(request, response)=>{
     const database = await mongoose.connect(`mongodb://localhost:27017/myDb`)
     const deletedata = await Post.deleteOne({_id: mongoose.Types.ObjectId(request.params.id)})
-    response.send(deletedata)
+    return response.send(deletedata)
 })
 
 
 app.post("/signin", async(request, response)=>{
     const database = await mongoose.connect(`mongodb://localhost:27017/myDatabase`)
-    const hashedpassword = await bcrypt.hash(request.body.password, 10)
     try{
-        const signindata = await User({username : request.body.username, password : hashedpassword}).save()
-        // response.send(signindata)
+        const hashedPassword = await bcrypt.hash(request.body.password, 10)
+        const user = await User.create({username : request.body.username, password : hashedPassword})
+        const token = jwt.sign({user_id : user._id, username : user.username}, process.env.ACCESS_SECRET_KEY)
+        return response.send({user, token})
     }catch(error){ //will handle duplicate key error 
         console.log(error)
-        response.send({error :error})
+        return response.send({error :error})
     }
     
 })
@@ -69,21 +76,22 @@ app.post("/signin", async(request, response)=>{
 
 app.post('/login', async(request,response)=>{
     const database = await mongoose.connect(`mongodb://localhost:27017/myDatabase`)
-    const user = await User.find({username : request.body.username})
+    let user = await User.find({username : request.body.username})
     if(user === null){
-        response.send("user not found")
+        return response.send("user not found")
     }
     try{
         const userCheck = await bcrypt.compare(request.body.password, user[0].password)
         if (userCheck){
-            response.send("login success")
-
+            const token = jwt.sign({user_id: user[0]._id, username: request.body.username}, process.env.ACCESS_SECRET_KEY)
+            user.token = token
+            return response.send(user)
         }else{
-            response.send("passoword is wrong")
+            return response.send("passoword is wrong")
         }
 
     }catch(error){ // runs on rejection promise //error from bcrypt.compare Promise
-        console.log(error)
+        response.send(error)
     }
 })  
 app.listen(5000)
